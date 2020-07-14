@@ -9,6 +9,7 @@ import axios from 'axios';
 import "./styles.css";
 
 import logo from "../../assets/logo.svg";
+import Dropzone from "../../components/DropZone";
 
 interface IItems {
   id: number;
@@ -32,6 +33,7 @@ interface IIBGEMunicipiosResponse {
 }
 
 
+
 const CreatePoint = () => {
 
   const [items, setItems] = useState<IItems[]>([]);
@@ -46,6 +48,7 @@ const CreatePoint = () => {
     whatsapp: ''
   })
 
+  const [selectedFile, setSelectedFile] = useState<File>();
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedMunicipio, setSelectedMunicipio] = useState('0');
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -129,23 +132,27 @@ const CreatePoint = () => {
 
   async function handleSubmit(event: FormEvent){
     event.preventDefault();
-    const { name, email, whatsapp} = formData;
-    const uf = selectedUf;
-    const city = selectedMunicipio;
-    const [latitude, longitude] = selectedPosition;
-    const items = selectedItems;
 
-    const data = {
-      name,
-      email,
-      whatsapp,
-      uf,
-      city,
-      latitude,
-      longitude,
-      items
+    console.log(selectedFile);
+
+    const { name, email, whatsapp} = formData;    
+    const [latitude, longitude] = selectedPosition;    
+
+    const data = new FormData();
+
+    data.append('name', name);
+    data.append('email', email);
+    data.append('whatsapp', whatsapp);
+    data.append('latitude', String(latitude));
+    data.append('longitude', String(longitude));
+    data.append('uf', selectedUf);
+    data.append('city', selectedMunicipio);
+    data.append('items', selectedItems.join(','));
+
+    if (selectedFile) {
+      data.append('image', selectedFile);
     }
-
+    
     await api.post('points', data);
 
     alert('Ponto de coleta criados');
@@ -169,6 +176,8 @@ const CreatePoint = () => {
           Cadastro do
           <br /> ponto de coleta
         </h1>
+
+        <Dropzone onFileUploaded={setSelectedFile} />
 
         <fieldset>
           <legend>
